@@ -1,0 +1,14 @@
+Roboto fonts bundled unmodified with CustomTkinter5.2.2.
+Source licensing: https://github.com/googlefonts/roboto/blob/main/LICENSE
+The following copyright and license information is extracted from the actual distributed font name tables.
+
+DBM-RV-Patcher/_internal/customtkinter/assets/fonts/Roboto/Roboto-Medium.ttf
+Copyright 2011 Google Inc. All Rights Reserved.
+Licensed under the Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0
+
+DBM-RV-Patcher/_internal/customtkinter/assets/fonts/Roboto/Roboto-Regular.ttf
+Copyright 2011 Google Inc. All Rights Reserved.
+Licensed under the Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0
+

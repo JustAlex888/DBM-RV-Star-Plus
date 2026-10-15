@@ -1,0 +1,14 @@
+Windows runtime distribution conditions
+
+The included Microsoft Distributable Code is provided only for use as part of
+this Windows application on Microsoft Windows. It is not licensed by this
+project for standalone redistribution or use on other platforms. Recipients
+must preserve its copyright/trademark/patent notices, must not use Microsoft
+trademarks to imply endorsement, and must not include that code in malicious,
+deceptive or unlawful programs. Further redistribution must preserve the
+applicable Microsoft distribution conditions, including these protections.
+
+These conditions concern the Microsoft runtime components only; they do not
+replace or restrict the separate licenses of Python or other open-source
+components. The original Windows-binary conditions are reproduced verbatim
+in Python-LICENSE.txt under Additional Conditions for this Windows binary build.
