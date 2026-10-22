@@ -13,9 +13,10 @@ from engine.dbm_rv_phase8_engine import fault_from_name
 from engine import dbm_rv_phase8_engine as core
 from wrapper import i18n
 from wrapper.bundled_pack import discover_bundled_pack, validate_install_pack
+from wrapper import windows_access
 
-WRAPPER_VERSION = '0.2.5-modular-TEST'
-BUILD_ID = 'PATCHER-20261015-03'
+WRAPPER_VERSION = '0.2.8-modular-TEST'
+BUILD_ID = 'PATCHER-20261022-01'
 SOURCE_LINKS = (
  ('DBM-RV от Aleksart163', 'Основной DBM-RV. Поддерживаемая ревизия: e97f138.', 'https://github.com/Aleksart163/DBM-RV-LEG', 'https://github.com/Aleksart163/DBM-RV-LEG/archive/e97f138de7d3ba846e8a2ee36a35730831e04e27.zip'),
  ('DBM-Dungeons', 'Дополнительный источник WoD/BfA: Deadly Boss Mods. Ревизия: 2dbfa75.', 'https://github.com/DeadlyBossMods/DBM-Dungeons', 'https://github.com/DeadlyBossMods/DBM-Dungeons/archive/2dbfa75c48d654044b597a233c378f1af00d2b62.zip'),
@@ -51,6 +52,21 @@ class CheckedPackEngine(PatchEngine):
         if self.expected_pack_sha256 is not None and self.bundle.sha256 != self.expected_pack_sha256:
             raise core.BaselineFailure('PACK_CHANGED_SINCE_USER_CHECK')
 
+    def _recheck_preconditions(self):
+        super()._recheck_preconditions()
+        self.access_probe = windows_access.inspect_access(
+            self.target_root, self.existing_roots, self.backup_root if self.before else None)
+        if not self.check_only and self.access_probe['status'] == 'DENIED':
+            denied = next(c['path'] for c in self.access_probe['checks'] if c['status'] == 'DENIED')
+            raise core.UnsafePathFailure('ACCESS_DENIED' if self.access_probe['admin'] else 'ADMIN_REQUIRED', denied)
+
+    def run(self):
+        result = super().run()
+        probe = getattr(self, 'access_probe', {})
+        result.details['access_probe'] = probe
+        result.details['requires_admin'] = probe.get('status') == 'DENIED' and not probe.get('admin')
+        return result
+
 
 def run_engine(*, target, source_s01, source_s08, pack_path, check_only,
                test_fault='none', backup_path=None, expected_inventory=None,
@@ -76,11 +92,13 @@ def run_engine(*, target, source_s01, source_s08, pack_path, check_only,
         check_only=check_only, fault=fault_from_name(test_fault), expected_pack_sha256=expected_pack_sha256).run().as_dict()
     result.update(engine_version=ENGINE_VERSION, wrapper_version=WRAPPER_VERSION,
                   build_id=BUILD_ID, selected_addons_root=str(addons))
+    core.write_json(Path(result['session_dir']) / 'summary.json', result)
     return result
 
 def exception_result(exc):
-    return {'outcome':'INVALID_SELECTION','reason_code':getattr(exc,'reason',None) or str(exc),
-            'target_write_count':0,'details':{'failure_detail':getattr(exc,'detail','')}}
+    reason = 'ACCESS_DENIED' if isinstance(exc, PermissionError) or getattr(exc, 'winerror', None) == 5 else getattr(exc,'reason',None) or str(exc)
+    return {'outcome':'INVALID_SELECTION','reason_code':reason,
+            'target_write_count':0,'details':{'failure_detail':getattr(exc,'detail',None) or str(exc)}}
 
 def outcome_message(result, language=None):
     language=language or i18n.detect_language()
@@ -90,6 +108,8 @@ def outcome_message(result, language=None):
     if identity:lines.append(tr('target_identity',version=identity.get('version','?').replace('-TEST',' TEST'),build=identity.get('build_id','?'),files=identity.get('files','?'),roots=identity.get('roots','?')))
     if mode=='FRESH_INSTALL':lines.append(tr('fresh'))
     if mode:lines.extend([tr('mode',mode=tr('mode_'+mode)),tr('found',count=len(d.get('existing_roots',[])))])
+    if outcome == 'READY' and d.get('requires_admin'):lines.append(tr('admin_needed'))
+    elif outcome == 'READY' and d.get('access_probe',{}).get('status') == 'DENIED':lines.append(tr('ACCESS_DENIED'))
     if d.get('ignored_regular_files'):lines.append(tr('preserved' if d.get('preserved_regular_files_verified') else 'preservation_pending'))
     code=result.get('reason_code')
     if code:lines.extend([i18n.error_text(code,language),tr('technical_code',code=code)])
@@ -202,6 +222,7 @@ def main(argv=None):
     mode.add_argument('--ui-smoke', action='store_true')
     mode.add_argument('--ui-self-test', action='store_true')
     parser.add_argument('--target', default='')
+    parser.add_argument('--resume-check', action='store_true', help='Restore selections and run CHECK only; never APPLY')
     parser.add_argument('--source-s01', default='')
     parser.add_argument('--source-s08', default='')
     parser.add_argument('--source-s18', default='')
@@ -227,7 +248,7 @@ def main(argv=None):
             Path(args.result_json).write_text(json.dumps(result, indent=2), encoding='utf-8')
         return 0 if result['outcome'] == 'PASS' else 2
     if not (args.headless_check or args.headless_apply):
-        return run_gui(args.ui_smoke)
+        return run_gui(args.ui_smoke, args if args.resume_check else None)
     try:
         extra = dict(item.split('=', 1) for item in args.source_extra)
         if args.source_s18:extra['S18'] = args.source_s18

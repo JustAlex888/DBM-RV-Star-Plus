@@ -956,6 +956,9 @@ class PatchEngine:
                 self._set_state("FAILED_NO_WRITES")
         except Exception as exc:
             reason = "UNEXPECTED_ENGINE_EXCEPTION"
+            if isinstance(exc, PermissionError) or (isinstance(exc, OSError) and getattr(exc, 'winerror', None) == 5):
+                reason = 'ACCESS_DENIED'
+                details['winerror'] = getattr(exc, 'winerror', None)
             details["failure_detail"] = f"{type(exc).__name__}: {exc}"
             assert self.logger is not None
             self.logger.emit(

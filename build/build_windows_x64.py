@@ -47,6 +47,8 @@ def main() -> None:
         "--paths", str(ROOT),
         "--manifest", str(ROOT / "build" / "windows_asinvoker.manifest"),
         "--version-file", str(ROOT / "build" / "windows_version_info.txt"),
+        "--icon", str(ROOT / "assets" / "patcher-legion.ico"),
+        "--add-data", str(ROOT / "assets") + ";resources/assets",
         "--collect-data", "customtkinter",
         '--add-data', str(ROOT / 'recipes') + ';recipe_code',
         '--hidden-import', 'runpy', '--hidden-import', 'difflib', '--hidden-import', 'ast',

@@ -16,8 +16,15 @@ for a,b in [('not self.frame.mytype == "area"','self.frame.mytype ~= "area"'),('
 start=s.index('\t-- Set Revision //');end=s.index('\tDBM_GUI_OptionsFrameWebsite:SetText',start)
 s=s[:start]+'''\t-- Companion metadata describes the adaptation; original Core revision is preserved.
  local compatVersion = GetAddOnMetadata and GetAddOnMetadata("DBM-RV-UWoW-Compat", "Version") or nil
- if type(compatVersion) ~= "string" or compatVersion == "" then compatVersion = "0.1.14 TEST" end
+ if type(compatVersion) ~= "string" or compatVersion == "" then compatVersion = "0.1.15 TEST" end
  DBM_GUI_OptionsFrameRevision:SetText(L.PatchGitHub or "")
+ local patchLink = CreateFrame("Button", nil, DBM_GUI_OptionsFrame)
+ patchLink:SetAllPoints(DBM_GUI_OptionsFrameRevision)
+ patchLink:RegisterForClicks("LeftButtonUp")
+ patchLink:SetScript("OnClick", function()
+  DBM:ShowUpdateReminder(nil, nil, L.PatchGitHubDialog or DBM_COPY_URL_DIALOG, "https://github.com/JustAlex888/DBM-RV-Star-Plus")
+ end)
+
  if L.TranslationBy then
   DBM_GUI_OptionsFrameTranslation:SetText(L.TranslationLine or (L.TranslationByPrefix .. L.TranslationBy .. "   •   " .. L.Credits))
  end
@@ -25,8 +32,8 @@ s=s[:start]+'''\t-- Companion metadata describes the adaptation; original Core r
 '''+s[end:]
 s=once(s,'DBM:ShowUpdateReminder(nil, nil, DBM_COPY_URL_DIALOG, "https://github.com/Aleksart163/DBM-RV")','DBM:ShowUpdateReminder(nil, nil, L.OriginalDBMRVDialog or DBM_COPY_URL_DIALOG, "https://github.com/Aleksart163/DBM-RV")');emit(p,s)
 strings={
-'en':{'Website':'Original DBM-RV: |cFF73C2FBhttps://github.com/Aleksart163/DBM-RV|r','WebsiteButton':'Original DBM-RV','OriginalDBMRVDialog':'Link to the original DBM-RV by Aleksart163, not the UWoW DBM RV Patch update page.','UWoWPatchCredits':'|cffffd200DBM RV*+ v%s — WoD/BfA content adaptation for UWoW — Just Alex 888 (Ломоносов x1)|r','PatchGitHub':'|cffffd200Patch GitHub:|r |cff73c2fblink will appear after publication|r','TranslationLine':'|cffffd200UWoW adaptation — Aleksart163 (Куплиняшка x100)   •   Special thanks: Danzo (Qfastrun x100)|r'},
-'ru':{'TranslationByPrefix':'|cffffd200Адаптация под uwow.biz — |r','TranslationBy':'|cffffd200Aleksart163 (Куплиняшка x100)|r','Credits':'|cffffd200Особая благодарность: Danzo (Qfastrun x100)|r','TranslationLine':'|cffffd200Адаптация под uwow.biz — Aleksart163 (Куплиняшка x100)   •   Особая благодарность: Danzo (Qfastrun x100)|r','Website':'|cffffd200Оригинальный DBM-RV:|r |cff73c2fbhttps://github.com/Aleksart163/DBM-RV|r','WebsiteButton':'Оригинал DBM-RV','OriginalDBMRVDialog':'Ссылка на оригинальный DBM-RV от Aleksart163. Это не страница обновления UWoW DBM RV Patch.','UWoWPatchCredits':'|cffffd200DBM RV*+ v%s — адаптация контента (WoD/BfA) для UWoW — Just Alex 888 (Ломоносов x1)|r','PatchGitHub':'|cffffd200GitHub патча:|r |cff73c2fbссылка появится после публикации|r'}}
+'en':{'PatchGitHubDialog':'DBM RV*+ update page. Copy this link with Ctrl+C and open it in your browser.','Website':'Original DBM-RV: |cFF73C2FBhttps://github.com/Aleksart163/DBM-RV|r','WebsiteButton':'Original DBM-RV','OriginalDBMRVDialog':'Link to the original DBM-RV by Aleksart163, not the UWoW DBM RV Patch update page.','UWoWPatchCredits':'|cffffd200DBM RV*+ v%s — WoD/BfA content adaptation for UWoW — Just Alex 888 (Ломоносов x1)|r','PatchGitHub':'|cffffd200Patch GitHub:|r |cff73c2fbhttps://github.com/JustAlex888/DBM-RV-Star-Plus|r','TranslationLine':'|cffffd200UWoW adaptation — Aleksart163 (Куплиняшка x100)   •   Special thanks: Danzo (Qfastrun x100)|r'},
+'ru':{'PatchGitHubDialog':'Страница обновлений DBM RV*+. Скопируйте ссылку сочетанием Ctrl+C и откройте её в браузере.','TranslationByPrefix':'|cffffd200Адаптация под uwow.biz — |r','TranslationBy':'|cffffd200Aleksart163 (Куплиняшка x100)|r','Credits':'|cffffd200Особая благодарность: Danzo (Qfastrun x100)|r','TranslationLine':'|cffffd200Адаптация под uwow.biz — Aleksart163 (Куплиняшка x100)   •   Особая благодарность: Danzo (Qfastrun x100)|r','Website':'|cffffd200Оригинальный DBM-RV:|r |cff73c2fbhttps://github.com/Aleksart163/DBM-RV|r','WebsiteButton':'Оригинал DBM-RV','OriginalDBMRVDialog':'Ссылка на оригинальный DBM-RV от Aleksart163. Это не страница обновления UWoW DBM RV Patch.','UWoWPatchCredits':'|cffffd200DBM RV*+ v%s — адаптация контента (WoD/BfA) для UWoW — Just Alex 888 (Ломоносов x1)|r','PatchGitHub':'|cffffd200GitHub патча:|r |cff73c2fbhttps://github.com/JustAlex888/DBM-RV-Star-Plus|r'}}
 for lang,fields in strings.items():
  p=f'DBM-GUI/localization.{lang}.lua';s=source(p)
  pattern=r'^L\.(?:'+ '|'.join(fields)+r')\s*=.*\n'
@@ -45,7 +52,7 @@ for name,y in [('Translation','45'),('Website','61')]:
 button=re.search(r'<Button name="\$parentWebsiteButton".*?</Button>',s,re.S);assert button
 node=button[0].replace('<AbsDimension x="96" y="22"/>','<AbsDimension x="150" y="22"/>').replace('<AbsDimension x="-20" y="0"/>','<AbsDimension x="-12" y="0"/>');s=s[:button.start()]+node+s[button.end():]
 s=once(s,'DBM:ShowUpdateReminder(nil, nil, DBM_COPY_URL_DIALOG)','DBM:ShowUpdateReminder(nil, nil, DBM_GUI_Translations.OriginalDBMRVDialog or DBM_COPY_URL_DIALOG, "https://github.com/Aleksart163/DBM-RV")');ET.fromstring(s);emit(p,s)
-p='DBM-Party-Legion/DBM-Party-Legion.toc';emit(p,once(source(p),'## Interface: 70300','## Interface: 70300\n## Version: 0.1.14 TEST'))
+p='DBM-Party-Legion/DBM-Party-Legion.toc';emit(p,once(source(p),'## Interface: 70300','## Interface: 70300\n## Version: 0.1.15 TEST'))
 p='DBM-Core/DBM-Core.toc';s=source(p)
 title='|cffffd200DBM RV*+|r |cff69ccf0Адаптация контента (WoD/BfA) для UWoW|r'
 s=re.sub(r'^## Title:.*$',lambda m:'## Title:'+title+'\n## Title-ruRU:'+title,s,flags=re.M)

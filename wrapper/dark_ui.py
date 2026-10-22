@@ -10,6 +10,7 @@ from tkinter import filedialog
 import customtkinter as ctk
 from wrapper import i18n
 from wrapper import dialogs
+from wrapper import windows_access
 
 BG = '#15191d'
 CARD = '#1d2228'
@@ -38,7 +39,13 @@ class App:
         self.extra_source_widgets = []
         self.result_var = tk.StringVar()
         self.history, self.pending, self.last_event = [], [], 0
-        root.title('DBM-RV Patcher — 0.2.5 Modular TEST')
+        root.title('DBM-RV Patcher — 0.2.8 Modular TEST')
+        # CTk applies its default icon after startup; override it afterwards too.
+        icon = ui.resource_root() / 'assets' / 'patcher-legion.ico'
+        if os.name == 'nt' and icon.is_file():
+            root.iconbitmap(default=str(icon))
+            root.after(300, lambda: root.iconbitmap(default=str(icon)))
+
         root.configure(fg_color=BG)
         # Canonical portrait composition; fit to available logical desktop height.
         dpi = ctypes.windll.user32.GetDpiForWindow(root.winfo_id()) if os.name == 'nt' else 96
@@ -304,6 +311,17 @@ class App:
         if self.busy or not getattr(self, 'pack_ready', True) or (not check_only and self.checked is None):
             return
         approved = self.checked if not check_only else None
+        if approved and approved.get('details',{}).get('requires_admin'):
+            if not dialogs.confirm(self.root, self.tr('admin_title'), self.tr('admin_confirm'), self.language):
+                return
+            args = windows_access.restart_arguments([v.get() for v in self.values],
+                        {k:v.get() for k,v in self.extra_sources.items()}, self.language)
+            result = windows_access.relaunch(args, self.root.winfo_id())
+            if result['status'] == 'STARTED':
+                self.root.destroy()
+            else:
+                self.result_var.set(self.tr('admin_cancelled' if result['status'] == 'CANCELLED' else 'admin_failed'))
+            return
         if approved and approved['details']['mode'] != 'FRESH_INSTALL':
             d = approved['details']
             if not dialogs.confirm(self.root,self.tr('confirm_title'), self.tr('confirm',count=len(d['existing_roots']),roots=', '.join(d['existing_roots']),backup=d['backup_planned_path']),getattr(self,'language','EN')):
@@ -357,10 +375,20 @@ class App:
             self.last_event = time.monotonic()
         self.root.after(70, self.poll)
 
-def run_gui(smoke=False):
+def run_gui(smoke=False, resume=None):
     ctk.set_appearance_mode('dark')
     root = ctk.CTk()
-    App(root)
+    app = App(root)
+    if resume:
+        for var, value in zip(app.values[:3], (resume.target, resume.source_s01, resume.source_s08)):
+            var.set(value)
+        if resume.pack:app.values[3].set(resume.pack)
+        extra = dict(item.split('=',1) for item in resume.source_extra)
+        if resume.source_s18:extra['S18'] = resume.source_s18
+        if extra.get('S18'):app.source_s18.set(extra['S18'])
+        if resume.ui_language:app.set_language(resume.ui_language)
+        app.show(2)
+        root.after(150, lambda: app.start(True))
     if smoke:
         root.after(1000, root.destroy)
     root.mainloop()

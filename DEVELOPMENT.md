@@ -28,3 +28,5 @@ hashes. The package describes the expected output file hashes and tree digest.
 Use disposable test directories for installation/rollback tests. Test scripts
 under `tests/` document the available checks and their required inputs; they
 are not game verification. Never use a live WoW/WTF tree as a test fixture.
+
+The build embeds assets/patcher-legion.ico and includes both approved icon assets under resources/assets for the window icon. Preserve those files when rebuilding.

@@ -1,6 +1,6 @@
 # Authors, dependencies and licenses
 
-DBM RV*+ 0.1.14 TEST uses the DBM-RV Patcher 0.2.5 Modular TEST installer.
+DBM RV*+ 0.1.15 TEST uses the DBM-RV Patcher 0.2.8 Modular TEST installer.
 This repository contains the patcher implementation, project transformation rules,
 the bundled Update Pack, documentation and screenshots. Donor ZIP archives and
 the complete combined gameplay addon tree are not distributed here.
@@ -33,3 +33,7 @@ CC BY 3.0 and MIT licenses and attribution. Their per-file credits and license
 documents are retained inside `data/APPROVED_AUDIO.zip` in the Update Pack and
 installed with the corresponding sound addon. A package-level MIT license is
 not presented as relicensing all included media.
+
+## Application icon
+
+The Legion-inspired application emblem was generated with OpenAI image generation for this project and approved by the project owner. It is not an official Blizzard icon or endorsement. The PNG and multi-size ICO are in assets/. Existing third-party copyright and license notices remain unchanged.

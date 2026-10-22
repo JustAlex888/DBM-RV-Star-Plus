@@ -91,6 +91,13 @@ RESOURCES={
 }
 TABLES={lang:{key:pair[i] for key,pair in RESOURCES.items()} for i,lang in enumerate(('RU','EN'))}
 RESOURCES.update({
+'admin_title':('Нужны права администратора','Administrator permission required'),
+'admin_needed':('Для установки в эту папку нужны права администратора. Нажмите «Применить»: установщик предложит перезапуск через стандартный запрос Windows. Выбранные файлы сохранятся.','This folder requires administrator permission. Click Apply to restart through the standard Windows prompt. Your selected files will be kept.'),
+'admin_confirm':('Windows ограничивает изменение выбранной папки игры. Перезапустить установщик с правами администратора?\n\nПодтвердите запрос Windows. Все выбранные пути сохранятся; после перезапуска установщик повторит проверку. Установка начнётся только после повторного нажатия «Применить».','Windows restricts changes to the selected game folder. Restart the installer as administrator?\n\nApprove the Windows prompt. Your selections will be kept and Check will run again. Installation starts only when you click Apply again.'),
+'admin_cancelled':('Запрос прав администратора отменён. Файлы игры не изменялись. Выбранные пути сохранены; можно повторить попытку.','Administrator permission was cancelled. Game files were not changed. Your selections are kept; you can try again.'),
+'admin_failed':('Не удалось перезапустить установщик с правами администратора. Выбранные пути сохранены. Закройте установщик и выберите для EXE «Запуск от имени администратора».','The installer could not restart as administrator. Your selections are kept. Close it and use Run as administrator on the EXE.'),
+'ADMIN_REQUIRED':('Windows не разрешает изменить папку игры без прав администратора. Запустите установщик от имени администратора и повторите проверку.','Windows requires administrator permission to change this game folder. Run the installer as administrator and repeat Check.'),
+'ACCESS_DENIED':('Windows запретила доступ к папке игры. Закройте WoW. Если установщик уже запущен от имени администратора, проверьте разрешения папки и блокировку защитой Windows.','Windows denied access to the game folder. Close WoW. If the installer is already running as administrator, check folder permissions and Windows protection.'),
 'source_s18_title':('DBM — исторические модули 2018','DBM — historical modules (2018)'),
 'source_s18_desc':('Исторические версии модулей, необходимые для этой сборки.','Historical module versions required for this build.'),
 'source_s18':('ZIP-файл DBM 2018','Original DBM 2018 ZIP'),
