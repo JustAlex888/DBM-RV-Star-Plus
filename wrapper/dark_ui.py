@@ -27,7 +27,9 @@ class App:
         self.text_bindings = []
         self.history_events = []
         self.current_note = "initial"
-        self.busy, self.checked, self.screen = False, None, 1
+        self.busy, self.checked, self.screen = False, None, 0
+        self.install_mode = "full"
+        self.source_fields = []
         self.events = queue.Queue()
         self.values = [tk.StringVar() for _ in range(4)]
         self.pack_identity = tk.StringVar(value="Содержимое DBM: выберите ZIP-пакет обновления")
@@ -39,7 +41,7 @@ class App:
         self.extra_source_widgets = []
         self.result_var = tk.StringVar()
         self.history, self.pending, self.last_event = [], [], 0
-        root.title('DBM-RV Patcher — 0.2.8 Modular TEST')
+        root.title('DBM-RV Patcher — 0.2.10 Modular TEST')
         # CTk applies its default icon after startup; override it afterwards too.
         icon = ui.resource_root() / 'assets' / 'patcher-legion.ico'
         if os.name == 'nt' and icon.is_file():
@@ -61,9 +63,11 @@ class App:
         self.language_control = ctk.CTkSegmentedButton(language_bar, values=['RU','EN'], command=self.set_language, width=130)
         self.language_control.set(self.language)
         self.language_control.pack(side='right')
+        self.mode_page = ctk.CTkFrame(root, fg_color=BG, corner_radius=0)
         self.preparation = ctk.CTkFrame(root, fg_color=BG, corner_radius=0)
         self.selection = ctk.CTkFrame(root, fg_color=BG, corner_radius=0)
         self.link_buttons, self.inputs = [], []
+        self.build_mode_page()
         self.build_preparation()
         self.build_selection()
         for var in self.values:
@@ -71,7 +75,7 @@ class App:
         self.values[3].trace_add('write', self.preview_pack)
         self.source_s18.trace_add('write', self.invalidate)
         root.protocol('WM_DELETE_WINDOW', self.close)
-        self.show(1)
+        self.show(0)
         self.autoload_pack()
         root.after(70, self.poll)
 
@@ -155,6 +159,29 @@ class App:
         self.label(parent, title, 31, True).pack(anchor='w', padx=self.n(30), pady=(self.n(28), self.n(10)))
         self.label(parent, subtitle, 19, color=MUTED).pack(anchor='w', padx=self.n(30), pady=(0, self.n(28)))
 
+    def build_mode_page(self):
+        self.header(self.mode_page, 'choose_mode', 'choose_desc')
+        for mode,title,description in [('update','update_existing','update_existing_desc'),('full','install_first','install_first_desc')]:
+            card = self.card(self.mode_page)
+            card.pack(fill='x',padx=self.n(20),pady=self.n(14))
+            self.label(card,description,17,color=MUTED,wraplength=self.width-self.n(90)).pack(fill='x',padx=self.n(20),pady=self.n(20))
+            button = self.button(card,title,lambda m=mode:self.choose_mode(m),True,420)
+            button.pack(fill='x',padx=self.n(20),pady=(0,self.n(20)))
+            if mode=='update':self.update_mode_button=button
+            else:self.full_mode_button=button
+        self.button(self.mode_page,'exit',self.close).pack(anchor='e',padx=self.n(20),pady=self.n(20))
+
+    def choose_mode(self, mode):
+        if self.busy:return
+        self.install_mode = mode
+        self.invalidate()
+        for field in self.source_fields:
+            if mode=='update':field.pack_forget()
+            else:field.pack(fill='x')
+        if mode=='update':
+            self.values[1].set('');self.values[2].set('');self.source_s18.set('')
+        self.show(2 if mode=='update' else 1)
+
     def build_preparation(self):
         page = self.preparation
         p = ctk.CTkScrollableFrame(page, fg_color=BG, corner_radius=0)
@@ -192,6 +219,7 @@ class App:
         bar = ctk.CTkFrame(page, fg_color='transparent')
         # Reserve footer space before the content cards consume the viewport.
         bar.pack(side='bottom', before=p._parent_frame, fill='x', padx=self.n(20), pady=self.n(20))
+        self.button(bar, 'back', lambda:self.show(0), width=110).pack(side='left')
         self.button(bar, 'Выход', self.close, width=110).pack(side='right')
         self.next_button = self.button(bar, 'Я скачал необходимые файлы', lambda: self.show(2), True, 280)
         self.next_button.pack(side='right', padx=self.n(15))
@@ -205,8 +233,11 @@ class App:
         card = self.card(body)
         card.pack(fill='x', padx=self.n(20))
         for index, text in enumerate(('Папка WoW или Interface\\AddOns', 'ZIP-файл DBM-RV от Aleksart', 'ZIP-файл DBM-Dungeons', 'source_s18')):
-            self.label(card, text, 20).pack(anchor='w', padx=self.n(20), pady=(self.n(12), self.n(4)))
-            row = ctk.CTkFrame(card, fg_color='transparent')
+            field = ctk.CTkFrame(card,fg_color='transparent')
+            field.pack(fill='x')
+            if index:self.source_fields.append(field)
+            self.label(field, text, 20).pack(anchor='w', padx=self.n(20), pady=(self.n(12), self.n(4)))
+            row = ctk.CTkFrame(field, fg_color='transparent')
             row.pack(fill='x', padx=self.n(20), pady=(0, self.n(9)))
             def browse(i=index):
                 chosen = filedialog.askdirectory(parent=self.root, title=self.tr('wow_folder')) if i == 0 else filedialog.askopenfilename(parent=self.root, title=self.tr('zip_dialog'), filetypes=[('ZIP', '*.zip')])
@@ -234,7 +265,7 @@ class App:
         bar = ctk.CTkFrame(p, fg_color='transparent')
         # Dynamic S02 fields must never push Check/Apply outside the window.
         bar.pack(side='bottom', before=p.winfo_children()[0], fill='x', padx=self.n(20), pady=(0, self.n(20)))
-        self.back_button = self.button(bar, 'Назад', lambda: self.show(1), width=105)
+        self.back_button = self.button(bar, 'Назад', lambda: self.show(0), width=105)
         self.check_button = self.button(bar, 'Проверить', lambda: self.start(True), True, 135)
         self.apply_button = self.button(bar, 'Применить', lambda: self.start(False), width=130)
         self.close_button = self.button(bar, 'Закрыть', self.close, width=120)
@@ -263,9 +294,10 @@ class App:
     def show(self, screen):
         if self.busy:
             return
+        self.mode_page.pack_forget()
         self.preparation.pack_forget()
         self.selection.pack_forget()
-        (self.preparation if screen == 1 else self.selection).pack(fill='both', expand=True)
+        (self.mode_page if screen == 0 else self.preparation if screen == 1 else self.selection).pack(fill='both', expand=True)
         self.screen = screen
 
     def close(self):
@@ -387,6 +419,7 @@ def run_gui(smoke=False, resume=None):
         if resume.source_s18:extra['S18'] = resume.source_s18
         if extra.get('S18'):app.source_s18.set(extra['S18'])
         if resume.ui_language:app.set_language(resume.ui_language)
+        app.choose_mode('full' if any(v.get() for v in app.values[1:3]) or app.source_s18.get() else 'update')
         app.show(2)
         root.after(150, lambda: app.start(True))
     if smoke:
