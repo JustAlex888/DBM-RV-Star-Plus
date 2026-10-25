@@ -15,8 +15,8 @@ from wrapper import i18n
 from wrapper.bundled_pack import discover_bundled_pack, validate_install_pack
 from wrapper import windows_access
 
-WRAPPER_VERSION = '0.2.8-modular-TEST'
-BUILD_ID = 'PATCHER-20261022-01'
+WRAPPER_VERSION = '0.2.10-modular-TEST'
+BUILD_ID = 'PATCHER-20261025-02'
 SOURCE_LINKS = (
  ('DBM-RV от Aleksart163', 'Основной DBM-RV. Поддерживаемая ревизия: e97f138.', 'https://github.com/Aleksart163/DBM-RV-LEG', 'https://github.com/Aleksart163/DBM-RV-LEG/archive/e97f138de7d3ba846e8a2ee36a35730831e04e27.zip'),
  ('DBM-Dungeons', 'Дополнительный источник WoD/BfA: Deadly Boss Mods. Ревизия: 2dbfa75.', 'https://github.com/DeadlyBossMods/DBM-Dungeons', 'https://github.com/DeadlyBossMods/DBM-Dungeons/archive/2dbfa75c48d654044b597a233c378f1af00d2b62.zip'),
@@ -132,7 +132,11 @@ def ui_self_test(language=None, scale=1.0, screenshot=None, page=2):
     root.withdraw()
     app = App(root)
     if language:app.set_language(language)
-    results = {'preparation_first': app.screen == 1}
+    results = {'mode_choice_first': app.screen == 0}
+    app.values[1].set('stale.zip');app.choose_mode('update');root.update()
+    results['update_mode_no_archives'] = app.screen==2 and not app.values[1].get() and all(not w.winfo_manager() for w in app.source_fields)
+    app.choose_mode('full');root.update()
+    results['full_mode_downloads'] = app.screen==1 and all(w.winfo_manager()=='pack' for w in app.source_fields)
     original_language=app.language
     app.language_control.configure(command=app.set_language)
     app.set_language('EN');results['manual_EN']=app.check_button.cget('text')=='Check'
@@ -185,10 +189,10 @@ def ui_self_test(language=None, scale=1.0, screenshot=None, page=2):
     results['three_donor_inputs'] = len(app.inputs) == 8 and app.extra_sources.get('S18') is app.source_s18
     results['third_donor_localized'] = app.tr('source_s18') != 'source_s18' and app.tr('source_s18_title') != 'source_s18_title'
     app.back_button.invoke()
-    results['back_navigation'] = app.screen == 1
+    results['back_navigation'] = app.screen == 0
     app.busy = True
     app.show(2)
-    results['navigation_blocked_during_transaction'] = app.screen == 1
+    results['navigation_blocked_during_transaction'] = app.screen == 0
     for code in ('DBM_REPARSE_ROOT_REJECTED', 'DBM_TARGET_ROOT_BLOCKED_BY_FILE', 'DBM_SPECIAL_ROOT_REJECTED'):
         result = {'outcome': 'UNSAFE_PATH', 'reason_code': code, 'details': {'failure_detail': 'C:\\Test\\Interface\\AddOns\\DBM-Core'}}
         app.finish(result, True)
@@ -234,7 +238,7 @@ def main(argv=None):
     parser.add_argument('--expected-inventory', default=None)
     parser.add_argument('--expected-pack-sha256', default=None)
     parser.add_argument('--expected-mode', default=None,
-                        choices=('FRESH_INSTALL', 'REPLACE_EXISTING_DBM', 'ALREADY_PATCHED'))
+                        choices=('FRESH_INSTALL', 'REPLACE_EXISTING_DBM', 'ALREADY_PATCHED', 'UPDATE_INSTALLED_PRODUCT'))
     parser.add_argument('--result-json')
     parser.add_argument('--test-fault', default='none', choices=('none', 'target_changed_after_staging', 'backup_failure', 'mid_commit_failure', 'post_commit_corruption'))
     parser.add_argument('--ui-language',choices=('RU','EN'))
