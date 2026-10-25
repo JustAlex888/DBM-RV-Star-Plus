@@ -15,7 +15,7 @@ from engine import dbm_rv_installer as legacy
 from engine.pack_v2 import VerifiedPack
 from engine.pack_v1 import require, dbm_path
 
-ENGINE_VERSION = '1.5.0-three-source-recipes'
+ENGINE_VERSION = '1.6.0-installed-update'
 core.ENGINE_VERSION = ENGINE_VERSION
 legacy.ENGINE_VERSION = ENGINE_VERSION
 
@@ -133,14 +133,6 @@ class PatchEngine(legacy.PatchEngine):
         self.roots = list(self.bundle.roots)
         require(not ({r.casefold() for r in self.roots} & self.PROTECTED_DIAGNOSTIC_ROOTS),
                 'PACK_CANNOT_MANAGE_INDEPENDENT_DIAGNOSTICS')
-        # Each source is pinned by exact ZIP container SHA and complete normalized
-        # per-file tree; unknown donor input is NOT auto-guessed.
-        for sid, group in self.bundle.sources.items():
-            path = self.selection.get(sid)
-            require(path is not None, f'SOURCE_{sid}_NOT_SELECTED')
-            self._verify_source_zip(sid, group, path)
-            self.source_paths[sid] = path
-        self.source_paths = {k:self.source_paths[k] for k in self.bundle.sources}
         # Precheck all record source dependencies before any staging/target change.
         self.before = self._snapshot(self.target_root)
         self.existing_roots, self.preserved_files = self._family_inventory(self.target_root)
@@ -155,6 +147,30 @@ class PatchEngine(legacy.PatchEngine):
             self.mode = 'FRESH_INSTALL'
         else:
             self.mode = 'REPLACE_EXISTING_DBM'
+        self.installed_update = not self.selection
+        if self.installed_update:self.source_paths = {}
+        if self.installed_update and not self.already_patched:
+            model = self.bundle.data_json('installed_update.json')
+            require(model.get('schema') == 1 and model.get('target_tree_digest') == self.bundle.target['tree_digest_sha256'], 'UPDATE_MODEL_INVALID')
+            self.update_base = None
+            for base in model['bases']:
+                require(set(base['base_files']) == set(self.expected), 'UPDATE_MODEL_INVALID')
+                hashes = {p:v['sha256'] for p,v in base['base_files'].items()}
+                dirs = {p+'/':'DIR' for p in legacy.normalized_dirs(hashes)}
+                if self.before == hashes | dirs:
+                    self.update_base = base
+                    break
+            require(self.update_base is not None, 'SUPPORTED_INSTALL_REQUIRED', 'Installed files differ from supported releases; select full installation.')
+            self.mode = 'UPDATE_INSTALLED_PRODUCT'
+        elif not self.installed_update:
+            # Each source is pinned by exact ZIP container SHA and complete normalized
+            # per-file tree; unknown donor input is NOT auto-guessed.
+            for sid, group in self.bundle.sources.items():
+                path = self.selection.get(sid)
+                require(path is not None, f'SOURCE_{sid}_NOT_SELECTED')
+                self._verify_source_zip(sid, group, path)
+                self.source_paths[sid] = path
+            self.source_paths = {k:self.source_paths[k] for k in self.bundle.sources}
         self.inventory_digest = core.aggregate_digest(self.before | self.preserved_files)
         if ((self.expected_inventory is not None and self.inventory_digest != self.expected_inventory)
              or (self.expected_mode is not None and self.mode != self.expected_mode)):
@@ -167,6 +183,29 @@ class PatchEngine(legacy.PatchEngine):
         self._set_state('INPUTS_VERIFIED')
 
     def _build_staging(self):
+        if self.installed_update:
+            self._set_state('BUILDING_INSTALLED_UPDATE')
+            for path, wanted in self.bundle.files.items():
+                source = self.target_root / path
+                legacy.safe_chain(source)
+                raw = source.read_bytes()
+                if core.sha256_bytes(raw) != wanted['sha256']:
+                    text = raw.decode('utf8')
+                    operations = self.update_base['patches'].get(path)
+                    require(operations is not None, 'UPDATE_PATCH_MISSING', path)
+                    previous = len(text)
+                    for start, end, replacement in reversed(operations):
+                        require(type(start) is int and type(end) is int and 0 <= start <= end <= previous and isinstance(replacement,str), 'UPDATE_PATCH_INVALID', path)
+                        text = text[:start] + replacement + text[end:]
+                        previous = start
+                    raw = text.encode('utf8')
+                require(len(raw) == wanted['size'] and core.sha256_bytes(raw) == wanted['sha256'], 'UPDATE_RESULT_MISMATCH', path)
+                destination = self.staging_root / path
+                destination.parent.mkdir(parents=True,exist_ok=True)
+                destination.write_bytes(raw)
+            self.staged_count = len(self.records)
+            self._set_state('STAGING_BUILT')
+            return
         from engine.recipe_runtime import build
         self._set_state('BUILDING_CLEAN_BASE')
         self._set_state('APPLYING_PROJECT_TRANSFORMATIONS')
@@ -181,9 +220,13 @@ class PatchEngine(legacy.PatchEngine):
 
     def run(self):
         result = super().run()
+        if getattr(self,'installed_update',False):
+            result.details['source_verification'] = 'INSTALLED_RELEASE_ALL_FILES_PINNED'
+            result.details['installed_base_version'] = (getattr(self,'update_base',None) or {}).get('version')
         result.details['ownership_policy'] = 'MANIFEST_ROOTS_PLUS_TWO_RETIRED_ROOTS_ONLY'
         result.details['retired_product_roots'] = sorted(self.RETIRED_PRODUCT_ROOTS)
         result.details['preserved_independent_entities'] = self.preserved_files
         if self.bundle is not None:
             result.details['content_identity'] = self.bundle.identity()
         return result
+
