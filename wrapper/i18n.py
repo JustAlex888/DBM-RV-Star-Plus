@@ -3,6 +3,16 @@ import ctypes,sys
 
 # key: (Russian, English). English is the fallback for unsupported locales.
 RESOURCES={
+'choose_mode':('Как установить DBM RV*+?','How would you like to install DBM RV*+?'),
+'choose_desc':('Выберите подходящий вариант.','Choose an option.'),
+'install_first':('Установить впервые','Install for the first time'),
+'install_first_desc':('Для первой или полной установки понадобятся три исходных ZIP.','First or full installation needs three original ZIPs.'),
+'update_existing':('Обновить установленный DBM RV*+','Update installed DBM RV*+'),
+'update_existing_desc':('Наша 0.1.14 или 0.1.15: выберите папку игры. Скачивать исходники не нужно.','Our 0.1.14 or 0.1.15: select your game folder. No original downloads needed.'),
+'mode_UPDATE_INSTALLED_PRODUCT':('Обновление установленной сборки','Update installed product'),
+'SUPPORTED_INSTALL_REQUIRED':('Наша поддерживаемая сборка не найдена или её файлы изменены. Вернитесь к выбору режима и выберите полную установку.','A supported build was not found or has modified files. Go back and choose full installation.'),
+'BUILDING_INSTALLED_UPDATE':('Подготовка обновления установленной сборки','Preparing installed update'),
+
 'language':('Язык','Language'),
 'confirm_yes':('Продолжить','Continue'),'confirm_no':('Отмена','Cancel'),
 'prepare':('Подготовка к установке','Prepare installation'),
@@ -102,6 +112,11 @@ RESOURCES.update({
 'source_s18_desc':('Исторические версии модулей, необходимые для этой сборки.','Historical module versions required for this build.'),
 'source_s18':('ZIP-файл DBM 2018','Original DBM 2018 ZIP'),
 })
+TABLES={lang:{key:pair[i] for key,pair in RESOURCES.items()} for i,lang in enumerate(('RU','EN'))}
+RU_TO_KEY={pair[0]:key for key,pair in RESOURCES.items()}
+
+RESOURCES.update({'selection_desc':('Проверьте выбранную папку игры перед установкой.','Check your selected game folder before installation.')})
+
 TABLES={lang:{key:pair[i] for key,pair in RESOURCES.items()} for i,lang in enumerate(('RU','EN'))}
 RU_TO_KEY={pair[0]:key for key,pair in RESOURCES.items()}
 
