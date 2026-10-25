@@ -16,7 +16,7 @@ for a,b in [('not self.frame.mytype == "area"','self.frame.mytype ~= "area"'),('
 start=s.index('\t-- Set Revision //');end=s.index('\tDBM_GUI_OptionsFrameWebsite:SetText',start)
 s=s[:start]+'''\t-- Companion metadata describes the adaptation; original Core revision is preserved.
  local compatVersion = GetAddOnMetadata and GetAddOnMetadata("DBM-RV-UWoW-Compat", "Version") or nil
- if type(compatVersion) ~= "string" or compatVersion == "" then compatVersion = "0.1.15 TEST" end
+ if type(compatVersion) ~= "string" or compatVersion == "" then compatVersion = "0.1.16 TEST" end
  DBM_GUI_OptionsFrameRevision:SetText(L.PatchGitHub or "")
  local patchLink = CreateFrame("Button", nil, DBM_GUI_OptionsFrame)
  patchLink:SetAllPoints(DBM_GUI_OptionsFrameRevision)
@@ -52,7 +52,7 @@ for name,y in [('Translation','45'),('Website','61')]:
 button=re.search(r'<Button name="\$parentWebsiteButton".*?</Button>',s,re.S);assert button
 node=button[0].replace('<AbsDimension x="96" y="22"/>','<AbsDimension x="150" y="22"/>').replace('<AbsDimension x="-20" y="0"/>','<AbsDimension x="-12" y="0"/>');s=s[:button.start()]+node+s[button.end():]
 s=once(s,'DBM:ShowUpdateReminder(nil, nil, DBM_COPY_URL_DIALOG)','DBM:ShowUpdateReminder(nil, nil, DBM_GUI_Translations.OriginalDBMRVDialog or DBM_COPY_URL_DIALOG, "https://github.com/Aleksart163/DBM-RV")');ET.fromstring(s);emit(p,s)
-p='DBM-Party-Legion/DBM-Party-Legion.toc';emit(p,once(source(p),'## Interface: 70300','## Interface: 70300\n## Version: 0.1.15 TEST'))
+p='DBM-Party-Legion/DBM-Party-Legion.toc';emit(p,once(source(p),'## Interface: 70300','## Interface: 70300\n## Version: 0.1.16 TEST'))
 p='DBM-Core/DBM-Core.toc';s=source(p)
 title='|cffffd200DBM RV*+|r |cff69ccf0Адаптация контента (WoD/BfA) для UWoW|r'
 s=re.sub(r'^## Title:.*$',lambda m:'## Title:'+title+'\n## Title-ruRU:'+title,s,flags=re.M)
