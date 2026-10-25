@@ -6,7 +6,7 @@ from engine.pack_v1 import require,relpath,dbm_path,hash64
 
 SCHEMA='dbm-rv-star-plus/source-pack-v2'
 FOLDERS={'common_research_only','owned_history_research_only','active_research_only','antorus_research_only','locale_research_only','supplemented_research_only','reserve_research_only'}
-DATA_FIXED={'build_plan.json','reserve_config.json','own_addons_manifest.json','APPROVED_AUDIO.zip','owned_project_rules/project_repairs.json','owned_project_rules/antorus_rvfix.json'}
+DATA_FIXED={'installed_update.json','build_plan.json','reserve_config.json','own_addons_manifest.json','APPROVED_AUDIO.zip','owned_project_rules/project_repairs.json','owned_project_rules/antorus_rvfix.json'}
 OWN_PATHS={'DBM-RV-Sounds/DBM-RV-Sounds.lua','DBM-RV-Sounds/DBM-RV-Sounds.toc','DBM-RV-Sounds/THIRD_PARTY_NOTICES.txt','DBM-RV-UWoW-BFA-Sounds/DBM-RV-UWoW-BFA-Sounds.lua','DBM-RV-UWoW-BFA-Sounds/DBM-RV-UWoW-BFA-Sounds.toc','DBM-RV-UWoW-Compat/Compat.lua','DBM-RV-UWoW-Compat/DBM-RV-UWoW-Compat.toc'}
 ALLOW={'pack.json','target.json','source_gates.json'}|{'data/'+x for x in DATA_FIXED}|{'data/own_addons/'+p for p in OWN_PATHS}
 class VerifiedPack:
