@@ -7,7 +7,7 @@ from engine import dbm_rv_phase8_engine as core
 from engine.dbm_rv_installer import long_path
 
 LOCK=threading.Lock()
-SCRIPTS=('historical_recipe.py','build_supplemented_five.py','build_41_reserve.py','build_locales.py','common_wod.py','common_gui.py','common_small_repairs.py','build_owned_history.py','post_history_repairs.py','active_bfa.py','antorus_source_rules.py','bfa_load_graph.py')
+SCRIPTS=('historical_recipe.py','build_supplemented_five.py','build_41_reserve.py','build_locales.py','common_wod.py','common_gui.py','common_small_repairs.py','build_owned_history.py','post_history_repairs.py','active_bfa.py','antorus_source_rules.py','bfa_load_graph.py','release_017.py')
 IMPORTS=('inputs_only','lua_lex','module_parser','merge_active','owned_adapter','source_spans')
 
 def code_root():

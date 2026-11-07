@@ -41,7 +41,7 @@ class App:
         self.extra_source_widgets = []
         self.result_var = tk.StringVar()
         self.history, self.pending, self.last_event = [], [], 0
-        root.title('DBM-RV Patcher — 0.2.10 Modular TEST')
+        root.title('DBM-RV Patcher — 0.2.11 Modular TEST')
         # CTk applies its default icon after startup; override it afterwards too.
         icon = ui.resource_root() / 'assets' / 'patcher-legion.ico'
         if os.name == 'nt' and icon.is_file():

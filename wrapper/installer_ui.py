@@ -15,8 +15,8 @@ from wrapper import i18n
 from wrapper.bundled_pack import discover_bundled_pack, validate_install_pack
 from wrapper import windows_access
 
-WRAPPER_VERSION = '0.2.10-modular-TEST'
-BUILD_ID = 'PATCHER-20261025-02'
+WRAPPER_VERSION = '0.2.11-modular-TEST'
+BUILD_ID = 'PATCHER-20261107-01'
 SOURCE_LINKS = (
  ('DBM-RV от Aleksart163', 'Основной DBM-RV. Поддерживаемая ревизия: e97f138.', 'https://github.com/Aleksart163/DBM-RV-LEG', 'https://github.com/Aleksart163/DBM-RV-LEG/archive/e97f138de7d3ba846e8a2ee36a35730831e04e27.zip'),
  ('DBM-Dungeons', 'Дополнительный источник WoD/BfA: Deadly Boss Mods. Ревизия: 2dbfa75.', 'https://github.com/DeadlyBossMods/DBM-Dungeons', 'https://github.com/DeadlyBossMods/DBM-Dungeons/archive/2dbfa75c48d654044b597a233c378f1af00d2b62.zip'),

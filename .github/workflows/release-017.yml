@@ -1,0 +1,30 @@
+name: Build and publish 0.1.17 TEST
+on:
+  push:
+    branches: [main]
+    paths: ['.github/release-017.json']
+permissions:
+  contents: write
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned build dependencies
+        run: python -m pip install -r requirements_development.txt
+      - name: Build native Windows x64 installer
+        run: python -m build.build_windows_x64
+      - name: Package installer and source
+        run: python -m build.package_release
+      - name: Test the packaged EXE with three pinned original sources
+        run: python tests/release_native.py
+      - name: Publish verified TEST prerelease
+        env:
+          GH_RELEASE_TOKEN: ${{ github.token }}
+          GH_RELEASE_REPOSITORY: ${{ github.repository }}
+          GH_RELEASE_COMMIT: ${{ github.sha }}
+        run: python build/publish_test_release.py
