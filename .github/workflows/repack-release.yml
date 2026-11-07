@@ -1,0 +1,21 @@
+name: Correct release documentation
+on:
+  push:
+    branches: [main]
+    paths: ['.github/repack-release.json']
+permissions:
+  contents: write
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Update release documents and archives, preserve verified binary
+        env:
+          GH_RELEASE_TOKEN: ${{ github.token }}
+          GH_RELEASE_REPOSITORY: ${{ github.repository }}
+          GH_RELEASE_COMMIT: ${{ github.sha }}
+        run: python build/repack_release_docs.py

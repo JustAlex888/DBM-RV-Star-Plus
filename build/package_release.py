@@ -18,7 +18,6 @@ def main():
 Нажмите «Проверить», изучите результат, затем «Применить».
 Настройки WTF и независимая диагностика сохраняются. Перед заменой установщик создаёт внутреннюю резервную копию.
 Это предварительный выпуск: новые normal-тайминги требуют игрового прогона.
-FreezeTrace — отдельная диагностика, исходники доступны в репозитории diagnostics/.
 https://github.com/JustAlex888/DBM-RV-Star-Plus
 '''
  en='''DBM RV*+ 0.1.17 TEST / Installer 0.2.11 / PATCHER-20261107-01
@@ -27,7 +26,6 @@ Select your WoW directory. Choose Update for an exact supported installed releas
 or First installation and select all three original ZIPs using the supplied links.
 Run Check, review the result, then Apply. WTF and independent diagnostics are preserved.
 This prerelease contains new normal timings that still require a game test.
-Optional FreezeTrace diagnostic sources are separate in the repository diagnostics/.
 https://github.com/JustAlex888/DBM-RV-Star-Plus
 '''
  (pkg/'README_RU.txt').write_text(ru,encoding='utf8');(pkg/'README_EN.txt').write_text(en,encoding='utf8')

@@ -38,4 +38,3 @@ not presented as relicensing all included media.
 
 The Legion-inspired application emblem was generated with OpenAI image generation for this project and approved by the project owner. It is not an official Blizzard icon or endorsement. The PNG and multi-size ICO are in assets/. Existing third-party copyright and license notices remain unchanged.
 
-The optional FreezeTrace diagnostic source is project-owned and is kept outside the managed gameplay target. Existing upstream notices and licenses are retained.

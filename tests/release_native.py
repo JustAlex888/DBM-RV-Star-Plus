@@ -17,7 +17,7 @@ def main():
  sha=lambda b:hashlib.sha256(b).hexdigest()
  def fixture(name):
   c=testroot/name;add=c/'wow/Interface/AddOns';add.mkdir(parents=True)
-  for rel,data in [('DBM-RV-FreezeTrace/keep.lua',b'freeze'),('DBM-RV-TestHarness/keep.lua',b'harness'),('IndependentAddon/keep.lua',b'addon')]:
+  for rel,data in [('DBM-IndependentDiagnostic/keep.lua',b'diagnostic'),('DBM-RV-TestHarness/keep.lua',b'harness'),('IndependentAddon/keep.lua',b'addon')]:
    p=add/rel;p.parent.mkdir();p.write_bytes(data)
   wtf=c/'wow/WTF/keep.txt';wtf.parent.mkdir();wtf.write_bytes(b'WTF preserved');return c,add
  def snapshot(c):return {p.relative_to(c/'wow').as_posix():sha(p.read_bytes())for p in(c/'wow').rglob('*')if p.is_file()and 'DBM-RV-Patcher-Backup'not in p.parts}
